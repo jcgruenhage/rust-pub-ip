@@ -6,21 +6,21 @@ use std::task::{Context, Poll};
 
 use futures_core::Stream;
 use futures_util::{future, ready, stream, StreamExt};
-use pin_project_lite::pin_project;
-use tracing::trace_span;
-use tracing_futures::Instrument;
-use trust_dns_proto::{
+use hickory_proto::{
     error::{ProtoError, ProtoErrorKind},
     op::Query,
     rr::{Name, RData, RecordType},
     udp::UdpClientStream,
     xfer::{DnsHandle, DnsRequestOptions, DnsResponse},
 };
+use pin_project_lite::pin_project;
+use tracing::trace_span;
+use tracing_futures::Instrument;
 
 #[cfg(feature = "tokio-dns-resolver")]
-use tokio::{net::UdpSocket, runtime::Handle};
+use hickory_client::client::AsyncClient;
 #[cfg(feature = "tokio-dns-resolver")]
-use trust_dns_client::client::AsyncClient;
+use tokio::{net::UdpSocket, runtime::Handle};
 
 use crate::{Resolutions, Version};
 
@@ -284,7 +284,7 @@ async fn dns_query(
 ) -> Result<DnsResponse, ProtoError> {
     let handle = Handle::current();
     let stream = UdpClientStream::<UdpSocket>::new(server);
-    let (mut client, bg) = AsyncClient::connect(stream).await?;
+    let (client, bg) = AsyncClient::connect(stream).await?;
     handle.spawn(bg);
     client
         .lookup(query, query_opts)
@@ -294,17 +294,14 @@ async fn dns_query(
         .ok_or_else(|| ProtoErrorKind::Message("expected a response").into())
 }
 
-fn parse_dns_response(
-    mut response: DnsResponse,
-    method: QueryMethod,
-) -> Result<IpAddr, crate::Error> {
-    let answer = match response.take_answers().into_iter().next() {
+fn parse_dns_response(response: DnsResponse, method: QueryMethod) -> Result<IpAddr, crate::Error> {
+    let answer = match response.answers().iter().next() {
         Some(answer) => answer,
         None => return Err(crate::Error::Addr),
     };
-    match answer.into_data() {
-        Some(RData::A(addr)) if method == QueryMethod::A => Ok(IpAddr::V4(addr)),
-        Some(RData::AAAA(addr)) if method == QueryMethod::AAAA => Ok(IpAddr::V6(addr)),
+    match answer.data() {
+        Some(RData::A(addr)) if method == QueryMethod::A => Ok(IpAddr::V4(addr.0)),
+        Some(RData::AAAA(addr)) if method == QueryMethod::AAAA => Ok(IpAddr::V6(addr.0)),
         Some(RData::TXT(txt)) if method == QueryMethod::TXT => match txt.iter().next() {
             Some(addr_bytes) => Ok(str::from_utf8(&addr_bytes[..])?.parse()?),
             None => Err(crate::Error::Addr),
