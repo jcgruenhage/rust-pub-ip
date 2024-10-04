@@ -32,19 +32,6 @@
 
 mod error;
 
-#[cfg(any(
-    all(feature = "dns-resolver", not(feature = "tokio-dns-resolver")),
-    all(feature = "http-resolver", not(feature = "tokio-http-resolver"))
-))]
-compile_error!("tokio is not enabled and is the only supported runtime currently - consider creating a PR or issue");
-
-#[cfg(any(
-    all(feature = "https-openssl", feature = "https-rustls-native"),
-    all(feature = "https-openssl", feature = "https-rustls-webpki"),
-    all(feature = "https-rustls-native", feature = "https-rustls-webpki")
-))]
-compile_error!("only one of https-openssl/https-rustls-native/https-rustls-webpki can be enabled");
-
 /// DNS resolver support.
 #[cfg(feature = "dns-resolver")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dns-resolver")))]

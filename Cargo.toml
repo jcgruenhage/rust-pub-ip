@@ -14,15 +14,9 @@ include = ["src/**/*", "examples/**/*", "README.md", "LICENSE", "Cargo.toml"]
 keywords = ["public", "external", "ip", "async"]
 
 [features]
-default = ["all-providers", "tokio-dns-resolver", "tokio-http-resolver", "https-openssl"]
-dns-resolver = ["hickory-proto"]
-http-resolver = ["http", "hyper", "hyper-system-resolver", "dns-lookup"]
-tokio-dns-resolver = ["dns-resolver", "tokio", "hickory-client", "hickory-proto/tokio-runtime"]
-tokio-http-resolver = ["http-resolver", "tokio", "hyper/runtime"]
-
-https-openssl = ["hyper-openssl", "openssl", "tower-layer"]
-https-rustls-webpki = ["hyper-rustls/webpki-roots"]
-https-rustls-native = ["hyper-rustls/rustls-native-certs"]
+default = ["all-providers", "dns-resolver", "http-resolver"]
+dns-resolver = ["hickory-proto", "hickory-client", "hickory-proto/tokio-runtime"]
+http-resolver = ["http", "hyper", "hyper-system-resolver", "hyper-rustls", "dns-lookup", "hyper/runtime"]
 
 all-providers = ["google", "opendns", "ipify-org", "my-ip-io", "myip-com", "seeip-org"]
 
@@ -41,8 +35,7 @@ pin-project-lite = "0.2"
 futures-core = { version = "0.3", default-features = false }
 futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
 
-tokio = { version = "1", optional = true }
-tower-layer = { version = "0.3", optional = true }
+tokio = "1"
 
 # DNS Resolver
 hickory-client = { version = "0.24", optional = true }
@@ -53,9 +46,7 @@ http = { version = "0.2", optional = true }
 dns-lookup = { version = "1", optional = true }
 hyper = { version = "0.14", features = ["client", "http1"], optional = true }
 hyper-system-resolver = { version = "0.5", default-features = false, optional = true }
-hyper-openssl = { version = "0.9", optional = true }
 hyper-rustls = { version = "0.23", features = ["rustls-native-certs"], optional = true }
-openssl = { version = "0.10", optional = true }
 
 [dev-dependencies]
 tokio = { version = "~1", features = ["macros"] }

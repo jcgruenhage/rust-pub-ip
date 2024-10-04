@@ -17,9 +17,7 @@ use pin_project_lite::pin_project;
 use tracing::trace_span;
 use tracing_futures::Instrument;
 
-#[cfg(feature = "tokio-dns-resolver")]
 use hickory_client::client::AsyncClient;
-#[cfg(feature = "tokio-dns-resolver")]
 use tokio::{net::UdpSocket, runtime::Handle};
 
 use crate::{Resolutions, Version};
@@ -276,7 +274,6 @@ impl<'r> Stream for DnsResolutions<'r> {
 ///////////////////////////////////////////////////////////////////////////////
 // Client
 
-#[cfg(feature = "tokio-dns-resolver")]
 async fn dns_query(
     server: SocketAddr,
     query: Query,
