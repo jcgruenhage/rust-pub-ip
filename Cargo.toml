@@ -18,15 +18,15 @@ default = ["all-providers", "dns-resolver", "http-resolver"]
 dns-resolver = ["hickory-proto", "hickory-client", "hickory-proto/tokio-runtime"]
 http-resolver = ["reqwest"]
 
-all-providers = ["cloudflare", "google", "opendns", "ipify-org", "my-ip-io", "myip-com", "seeip-org"]
+all-providers = ["cloudflare", "google", "ipify-org", "my-ip-io", "myip-com", "opendns", "seeip-org"]
 
 cloudflare = []
 google = []
-opendns = []
-myip-com = []
-my-ip-io = []
-seeip-org = []
 ipify-org = []
+my-ip-io = []
+myip-com = []
+opendns = []
+seeip-org = []
 
 [dependencies]
 thiserror = "1"
