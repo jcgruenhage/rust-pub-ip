@@ -5,11 +5,6 @@ use std::str::Utf8Error;
 
 use thiserror::Error;
 
-#[cfg(feature = "dns-resolver")]
-use crate::dns;
-#[cfg(feature = "http-resolver")]
-use crate::http;
-
 /// An error produced while attempting to resolve.
 #[derive(Debug, Error)]
 #[non_exhaustive]
@@ -24,12 +19,12 @@ pub enum Error {
     #[cfg(feature = "dns-resolver")]
     #[cfg_attr(docsrs, doc(cfg(feature = "dns-resolver")))]
     #[error("dns resolver: {0}")]
-    Dns(dns::Error),
+    Dns(#[from] crate::dns::Error),
     /// HTTP resolver error.
     #[cfg(feature = "http-resolver")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http-resolver")))]
     #[error("http resolver: {0}")]
-    Http(http::Error),
+    Http(#[from] crate::http::Error),
     /// Other resolver error.
     #[error("other resolver: {0}")]
     Other(Box<dyn StdError + Send + Sync + 'static>),
@@ -45,17 +40,9 @@ impl Error {
     }
 }
 
-#[cfg(feature = "dns-resolver")]
-impl From<dns::Error> for Error {
-    fn from(error: dns::Error) -> Self {
-        Self::Dns(error)
-    }
-}
-
-#[cfg(feature = "http-resolver")]
-impl From<http::Error> for Error {
-    fn from(error: http::Error) -> Self {
-        Self::Http(error)
+impl From<reqwest::Error> for Error {
+    fn from(error: reqwest::Error) -> Self {
+        Into::<crate::http::Error>::into(error).into()
     }
 }
 

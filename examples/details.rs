@@ -13,7 +13,7 @@ async fn main() {
             println!(
                 "public ip address {:?} resolved from {} ({:?})",
                 addr,
-                details.uri(),
+                details.url(),
                 details.server(),
             );
         }
